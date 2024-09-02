@@ -8,6 +8,7 @@ import {
   Revenue,
 } from "./definitions";
 import { formatCurrency } from "./utils";
+import { notFound } from "next/navigation";
 
 export async function fetchRevenue() {
   try {
@@ -134,7 +135,14 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
+const uuidV4Regex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 export async function fetchInvoiceById(id: string) {
+  if (!uuidV4Regex.test(id)) {
+    notFound();
+  }
+
   try {
     const data = await sql<InvoiceForm>`
       SELECT
@@ -145,7 +153,6 @@ export async function fetchInvoiceById(id: string) {
       FROM invoices
       WHERE invoices.id = ${id};
     `;
-
     const invoice = data.rows.map((invoice) => ({
       ...invoice,
       // Convert amount from cents to dollars
